@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promises');
+const mysql = require('mysql2/promise');
 const { Sequelize } = require('sequelize');
 
 module.exports = db = {};
@@ -6,7 +6,7 @@ module.exports = db = {};
 createDatabase();
 
 async function createDatabase() {
-  const connection = await mysql.createConecction({
+  const connection = await mysql.createConnection({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
@@ -26,6 +26,13 @@ async function createDatabase() {
   );
 
   db.sequelize = sequelize;
+  db.posts = require('../models/posts')(sequelize);
+  db.category = require('../models/category')(sequelize);
+
+  db.posts.belongsTo(db.category, {
+    foreignKey: 'category_id',
+    as: 'category',
+  });
 
   await sequelize.sync();
   console.log('Connection established');
