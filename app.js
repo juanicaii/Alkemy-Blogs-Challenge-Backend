@@ -19,6 +19,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // RUTAS
-app.use('/api/posts', postsRouter);
+app.use('/api', postsRouter);
 
 module.exports = app;
