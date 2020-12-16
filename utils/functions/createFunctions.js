@@ -9,13 +9,12 @@ function createIfNoExist(model, data, where = {}) {
       where,
       raw: true,
     })
-    .then((foundItem) => {
+    .then(async (foundItem) => {
       if (!foundItem) {
-        model.create(data);
-        return { found: false, data };
+        const itemCreated = await model.create(data, { raw: true });
+        return { found: false, data: itemCreated };
       }
-
-      return { found: true, foundItem };
+      return { found: true, data: foundItem };
     });
 }
 

@@ -30,7 +30,7 @@ async function createDatabase() {
   db.category = require('../models/category')(sequelize);
 
   db.posts.belongsTo(db.category, {
-    foreignKey: 'category_id',
+    foreignKey: 'categoryID',
     as: 'category',
   });
 
