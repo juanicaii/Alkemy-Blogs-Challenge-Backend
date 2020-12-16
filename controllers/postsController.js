@@ -30,7 +30,17 @@ async function getPost(req, res) {
   try {
     // OBTENGO EL ID DE LOS PARAMS
     const { id } = req.params;
+    const errors = validationResult(req).array();
 
+    if (errors.length > 0) {
+      // SI HAY ERRORES MUESTRO EL ERROR
+      const error = [];
+      errors.map((err) => {
+        error.push(err.msg);
+      });
+
+      throw Boom.badData(error);
+    }
     // OPCIONES DE LA QUERY
     const options = {
       where: { id },
@@ -49,7 +59,7 @@ async function getPost(req, res) {
       messages.messageWithoutError(res, `Post ID: ${id}`, post);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500, err);
+    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
   }
 }
 
@@ -97,7 +107,6 @@ async function createPost(req, res, next) {
       );
     }
   } catch (err) {
-    console.log(err);
     messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
   }
 }
@@ -106,46 +115,66 @@ async function editPost(req, res) {
   try {
     // OBTENGO EL ID DEL PARAM Y EL BODY
     const { id } = req.params;
-
     const { title, content, image, category } = req.body;
-    // VERIFICAMOS QUE LA IMAGEN SEA UNA IMAGEN
-    const imageType = image.substr(image.length - 4);
 
-    if (imageType == imageTypeDic.jpg || imageType == imageTypeDic.png) {
-      // SI NO EXISTE LA CATEGORIA LA CREO
-      const categoryExist = await functions.createIfNoExist(
-        db.category,
-        { name: category },
-        { name: category }
-      );
+    const errors = validationResult(req).array();
 
-      const post = {
-        title,
-        content,
-        image,
-        categoryID: categoryExist.data.id,
-      };
+    // VERIFICO QUE NO HAYA ERRORES
+    if (errors.length > 0) {
+      // SI HAY ERRORES MUESTRO EL ERROR
+      const error = [];
+      errors.map((err) => {
+        error.push(err.msg);
+      });
 
-      const options = { where: { id } };
-
-      const editedItem = await functions.editData(db.posts, post, options);
-
-      if (editedItem) {
-        messages.messageWithoutError(res, 'Post edited succesfuly', { edited: true });
-      } else {
-        messages.messageWithoutError(res, 'Post doesnt exist', { edited: false }, 404);
-      }
-    } else {
-      messages.messageWithoutError(res, 'Invalid Image', { edited: false }, 404);
+      throw Boom.notFound(error);
     }
-  } catch (err) {}
+
+    // VERIFICAMOS QUE LA IMAGEN SEA UNA IMAGEN
+
+    // SI NO EXISTE LA CATEGORIA LA CREO
+    const categoryExist = await functions.createIfNoExist(
+      db.category,
+      { name: category },
+      { name: category }
+    );
+
+    const post = {
+      title,
+      content,
+      image,
+      categoryID: categoryExist.data.id,
+    };
+
+    const options = { where: { id } };
+
+    const editedItem = await functions.editData(db.posts, post, options);
+
+    if (editedItem) {
+      messages.messageWithoutError(res, 'Post edited succesfuly', { edited: true });
+    } else {
+      messages.messageWithoutError(res, 'Post doesnt exist', { edited: false }, 404);
+    }
+  } catch (err) {
+    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
+  }
 }
 
 async function deletePost(req, res) {
   try {
     // OBTENGO ID DEL PARAMS
     const { id } = req.params;
+    const errors = validationResult(req).array();
 
+    if (errors.length > 0) {
+      // SI HAY ERRORES MUESTRO EL ERROR
+      const error = [];
+      errors.map((err) => {
+        error.push(err.msg);
+      });
+
+      throw Boom.badData(error);
+    }
     // OPCIONES DE LA QUERY
     const options = {
       where: {
@@ -164,7 +193,7 @@ async function deletePost(req, res) {
       messages.messageWithoutError(res, 'Post doesnt exist', { deleted: false }, 404);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500, err);
+    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
   }
 }
 

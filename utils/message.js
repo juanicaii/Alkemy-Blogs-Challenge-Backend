@@ -5,5 +5,5 @@ function messageWithoutError(res, message, content, status = 200) {
 }
 
 function messageWithError(res, message, status, err) {
-  return res.status(status).json({ message, content: null, err });
+  return res.status(status).json({ message, content: null, error: err });
 }

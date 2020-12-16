@@ -4,7 +4,7 @@ const db = require('../db');
 const functions = require('../utils/functions');
 const Boom = require('boom');
 
-const schmeValidationPost = checkSchema({
+const schemeValidationPost = checkSchema({
   title: {
     in: ['body'],
     errorMessage: 'The title is wrong',
@@ -64,4 +64,16 @@ const schmeValidationPost = checkSchema({
   },
 });
 
-module.exports = schmeValidationPost;
+const schemeValidationId = checkSchema({
+  id: {
+    in: ['params'],
+    isInt: {
+      errorMessage: 'The id must be numeric',
+    },
+  },
+});
+
+module.exports = {
+  schemeValidationId,
+  schemeValidationPost,
+};
