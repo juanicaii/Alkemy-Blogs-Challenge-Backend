@@ -1,6 +1,5 @@
-const functionsCreate = require('../utils/functions/createFunctions');
-const functionsFind = require('../utils/functions/findFuntions');
-const messages = require('../utils/messages/message');
+const functions = require('../utils/functions');
+const messages = require('../utils/message');
 const db = require('../db');
 module.exports = {
   getPosts,
@@ -21,14 +20,14 @@ async function getPosts(req, res) {
         },
       ],
     };
-    const posts = await functionsFind.getAllData(db.posts, options);
+    const posts = await functions.getAllData(db.posts, options);
     //  SI EXISTE ALGUN POSTS
     if (posts) {
       // DEVUELVO LOS POSTS
       messages.messageWithoutError(res, 'All posts', posts);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrador');
+    messages.messageWithError(res, 'Contact a Administrador', 500, err);
   }
 }
 
@@ -48,14 +47,14 @@ async function getPost(req, res) {
       ],
     };
     // TRAIGO EL POST CON EL ID
-    const post = await functionsFind.getOneData(db.posts, options);
+    const post = await functions.getOneData(db.posts, options);
 
     //  SI EXISTE SE LO MANDO
     if (post) {
       messages.messageWithoutError(res, `Post ID: ${id}`, post);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', err, 500);
+    messages.messageWithError(res, 'Contact a Administrator', 500, err);
   }
 }
 
@@ -65,7 +64,7 @@ async function createPost(req, res) {
     const { title, content, image, category } = req.body;
 
     // SI NO EXISTE LA CATEGORIA LA CREO
-    const categoryExist = await functionsCreate.createIfNoExist(
+    const categoryExist = await functions.createIfNoExist(
       db.category,
       { name: category },
       { name: category }
@@ -79,7 +78,7 @@ async function createPost(req, res) {
       categoryID: categoryExist.data.id,
     };
 
-    const postCreated = await functionsCreate.createItem(db.posts, post);
+    const postCreated = await functions.createItem(db.posts, post, 201);
 
     // VERIFICO SI SE CREO
     if (postCreated) {
@@ -90,16 +89,64 @@ async function createPost(req, res) {
       messages.messageWithError(res, 'The post couldnt be created, Contact a Administrator', 500);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500);
+    messages.messageWithError(res, 'Contact a Administrator', 500, err);
   }
 }
 
-async function editPost(req, res) {}
+async function editPost(req, res) {
+  try {
+    // OBTENGO EL ID DEL PARAM Y EL BODY
+    const { id } = req.params;
+    const { title, content, image, category } = req.body;
+    // SI NO EXISTE LA CATEGORIA LA CREO
+    const categoryExist = await functions.createIfNoExist(
+      db.category,
+      { name: category },
+      { name: category }
+    );
+
+    const post = {
+      title,
+      content,
+      image,
+      categoryID: categoryExist.data.id,
+    };
+
+    const options = { where: { id } };
+
+    const editedItem = await functions.editData(db.posts, post, options);
+
+    if (editedItem) {
+      messages.messageWithoutError(res, 'Post edited succesfuly', { edited: true });
+    } else {
+      messages.messageWithoutError(res, 'Post doesnt exist', { edited: false }, 404);
+    }
+  } catch (err) {}
+}
 
 async function deletePost(req, res) {
   try {
+    // OBTENGO ID DEL PARAMS
     const { id } = req.params;
+
+    // OPCIONES DE LA QUERY
+    const options = {
+      where: {
+        id,
+      },
+    };
+    // ELIMINO EL ITEM
+    const deletedItem = await functions.deleteData(db.posts, options);
+
+    // SI SE ELIMINO
+    if (deletedItem) {
+      // DEVUELVO QUE SE ELIMINO
+      messages.messageWithoutError(res, 'Post deleted succesfuly', { deleted: true });
+    } else {
+      // DEVUELVO QUE NO EXISTE EL POST
+      messages.messageWithoutError(res, 'Post doesnt exist', { deleted: false }, 404);
+    }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500);
+    messages.messageWithError(res, 'Contact a Administrator', 500, err);
   }
 }
