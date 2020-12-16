@@ -1,10 +1,9 @@
-const { checkSchema } = require('express-validator');
 const imageTypeDic = require('../utils/imageType');
 const db = require('../db');
 const functions = require('../utils/functions');
 const Boom = require('boom');
 
-const schemeValidationPost = checkSchema({
+const schemeValidationPost = {
   title: {
     in: ['body'],
     errorMessage: 'The title is wrong',
@@ -62,16 +61,16 @@ const schemeValidationPost = checkSchema({
       },
     },
   },
-});
+};
 
-const schemeValidationId = checkSchema({
+const schemeValidationId = {
   id: {
     in: ['params'],
     isInt: {
       errorMessage: 'The id must be numeric',
     },
   },
-});
+};
 
 module.exports = {
   schemeValidationId,

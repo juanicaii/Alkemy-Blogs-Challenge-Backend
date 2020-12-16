@@ -59,7 +59,12 @@ async function getPost(req, res) {
       messages.messageWithoutError(res, `Post ID: ${id}`, post);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
+    messages.messageWithError(
+      res,
+      err.output.payload.message,
+      err.output.statusCode,
+      err.output.payload.error
+    );
   }
 }
 
@@ -77,7 +82,7 @@ async function createPost(req, res, next) {
         error.push(err.msg);
       });
 
-      throw Boom.notFound(error);
+      throw Boom.badData(error);
     }
 
     // CREO EL POST
@@ -107,7 +112,12 @@ async function createPost(req, res, next) {
       );
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
+    messages.messageWithError(
+      res,
+      err.output.payload.message,
+      err.output.statusCode,
+      err.output.payload.error
+    );
   }
 }
 
@@ -123,11 +133,12 @@ async function editPost(req, res) {
     if (errors.length > 0) {
       // SI HAY ERRORES MUESTRO EL ERROR
       const error = [];
+      const errorId = [];
       errors.map((err) => {
         error.push(err.msg);
       });
 
-      throw Boom.notFound(error);
+      throw Boom.badData(error);
     }
 
     // VERIFICAMOS QUE LA IMAGEN SEA UNA IMAGEN
@@ -156,7 +167,12 @@ async function editPost(req, res) {
       messages.messageWithoutError(res, 'Post doesnt exist', { edited: false }, 404);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
+    messages.messageWithError(
+      res,
+      err.output.payload.message,
+      err.output.statusCode,
+      err.output.payload.error
+    );
   }
 }
 
