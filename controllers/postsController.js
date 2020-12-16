@@ -1,6 +1,12 @@
 const functions = require('../utils/functions');
 const messages = require('../utils/message');
 const db = require('../db');
+
+const imageTypeDic = {
+  png: '.png',
+  jpg: '.jpg',
+  jpeg: '.jpeg',
+};
 module.exports = {
   getPosts,
   getPost,
@@ -63,30 +69,45 @@ async function createPost(req, res) {
     // OBTENDO EL POST DEL BODY
     const { title, content, image, category } = req.body;
 
-    // SI NO EXISTE LA CATEGORIA LA CREO
-    const categoryExist = await functions.createIfNoExist(
-      db.category,
-      { name: category },
-      { name: category }
-    );
+    // VERIFICO QUE SEA UNA IMAGEN VALIDA
+    const imageType = image.substr(image.length - 4);
 
-    // CREO EL POST
-    const post = {
-      title,
-      content,
-      image,
-      categoryID: categoryExist.data.id,
-    };
+    if (imageType == imageTypeDic.jpg || imageType == imageTypeDic.png) {
+      // SI NO EXISTE LA CATEGORIA LA CREO
+      const categoryExist = await functions.createIfNoExist(
+        db.category,
+        { name: category },
+        { name: category }
+      );
 
-    const postCreated = await functions.createItem(db.posts, post, 201);
+      // CREO EL POST
+      const post = {
+        title,
+        content,
+        image,
+        categoryID: categoryExist.data.id,
+      };
 
-    // VERIFICO SI SE CREO
-    if (postCreated) {
-      // SI SE CREO DEVUELVO QUE SE CREO
-      messages.messageWithoutError(res, 'Post created succesfuly', postCreated);
+      const postCreated = await functions.createItem(db.posts, post, 201);
+
+      // VERIFICO SI SE CREO
+      if (postCreated) {
+        // SI SE CREO DEVUELVO QUE SE CREO
+        messages.messageWithoutError(res, 'Post created succesfuly', {
+          created: true,
+          data: postCreated,
+        });
+      } else {
+        // SI NO DEVUELVO ERROR
+        messages.messageWithoutError(
+          res,
+          'The post couldnt be created, Contact a Administrator',
+          { created: false, data: null },
+          200
+        );
+      }
     } else {
-      // SI NO DEVUELVO ERROR
-      messages.messageWithError(res, 'The post couldnt be created, Contact a Administrator', 500);
+      messages.messageWithoutError(res, 'Invalid Image', { created: false, data: null }, 404);
     }
   } catch (err) {
     messages.messageWithError(res, 'Contact a Administrator', 500, err);
@@ -97,29 +118,37 @@ async function editPost(req, res) {
   try {
     // OBTENGO EL ID DEL PARAM Y EL BODY
     const { id } = req.params;
+
     const { title, content, image, category } = req.body;
-    // SI NO EXISTE LA CATEGORIA LA CREO
-    const categoryExist = await functions.createIfNoExist(
-      db.category,
-      { name: category },
-      { name: category }
-    );
+    // VERIFICAMOS QUE LA IMAGEN SEA UNA IMAGEN
+    const imageType = image.substr(image.length - 4);
 
-    const post = {
-      title,
-      content,
-      image,
-      categoryID: categoryExist.data.id,
-    };
+    if (imageType == imageTypeDic.jpg || imageType == imageTypeDic.png) {
+      // SI NO EXISTE LA CATEGORIA LA CREO
+      const categoryExist = await functions.createIfNoExist(
+        db.category,
+        { name: category },
+        { name: category }
+      );
 
-    const options = { where: { id } };
+      const post = {
+        title,
+        content,
+        image,
+        categoryID: categoryExist.data.id,
+      };
 
-    const editedItem = await functions.editData(db.posts, post, options);
+      const options = { where: { id } };
 
-    if (editedItem) {
-      messages.messageWithoutError(res, 'Post edited succesfuly', { edited: true });
+      const editedItem = await functions.editData(db.posts, post, options);
+
+      if (editedItem) {
+        messages.messageWithoutError(res, 'Post edited succesfuly', { edited: true });
+      } else {
+        messages.messageWithoutError(res, 'Post doesnt exist', { edited: false }, 404);
+      }
     } else {
-      messages.messageWithoutError(res, 'Post doesnt exist', { edited: false }, 404);
+      messages.messageWithoutError(res, 'Invalid Image', { edited: false }, 404);
     }
   } catch (err) {}
 }
