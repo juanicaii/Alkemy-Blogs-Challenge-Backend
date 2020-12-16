@@ -1,19 +1,8 @@
 const functions = require('../utils/functions');
 const messages = require('../utils/message');
 const db = require('../db');
-
-const imageTypeDic = {
-  png: '.png',
-  jpg: '.jpg',
-  jpeg: '.jpeg',
-};
-module.exports = {
-  getPosts,
-  getPost,
-  createPost,
-  deletePost,
-  editPost,
-};
+const { validationResult } = require('express-validator');
+const Boom = require('boom');
 
 async function getPosts(req, res) {
   try {
@@ -64,53 +53,52 @@ async function getPost(req, res) {
   }
 }
 
-async function createPost(req, res) {
+async function createPost(req, res, next) {
   try {
     // OBTENDO EL POST DEL BODY
     const { title, content, image, category } = req.body;
+    const errors = validationResult(req).array();
 
-    // VERIFICO QUE SEA UNA IMAGEN VALIDA
-    const imageType = image.substr(image.length - 4);
+    // VERIFICO QUE NO HAYA ERRORES
+    if (errors.length > 0) {
+      // SI HAY ERRORES MUESTRO EL ERROR
+      const error = [];
+      errors.map((err) => {
+        error.push(err.msg);
+      });
 
-    if (imageType == imageTypeDic.jpg || imageType == imageTypeDic.png) {
-      // SI NO EXISTE LA CATEGORIA LA CREO
-      const categoryExist = await functions.createIfNoExist(
-        db.category,
-        { name: category },
-        { name: category }
-      );
+      throw Boom.notFound(error);
+    }
 
-      // CREO EL POST
-      const post = {
-        title,
-        content,
-        image,
-        categoryID: categoryExist.data.id,
-      };
+    // CREO EL POST
+    const post = {
+      title,
+      content,
+      image,
+      categoryID: category,
+    };
 
-      const postCreated = await functions.createItem(db.posts, post, 201);
+    const postCreated = await functions.createItem(db.posts, post, 201);
 
-      // VERIFICO SI SE CREO
-      if (postCreated) {
-        // SI SE CREO DEVUELVO QUE SE CREO
-        messages.messageWithoutError(res, 'Post created succesfuly', {
-          created: true,
-          data: postCreated,
-        });
-      } else {
-        // SI NO DEVUELVO ERROR
-        messages.messageWithoutError(
-          res,
-          'The post couldnt be created, Contact a Administrator',
-          { created: false, data: null },
-          200
-        );
-      }
+    // VERIFICO SI SE CREO
+    if (postCreated) {
+      // SI SE CREO DEVUELVO QUE SE CREO
+      messages.messageWithoutError(res, 'Post created succesfuly', {
+        created: true,
+        data: postCreated,
+      });
     } else {
-      messages.messageWithoutError(res, 'Invalid Image', { created: false, data: null }, 404);
+      // SI NO DEVUELVO ERROR
+      messages.messageWithoutError(
+        res,
+        'The post couldnt be created, Contact a Administrator',
+        { created: false, data: null },
+        200
+      );
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500, err);
+    console.log(err);
+    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
   }
 }
 
@@ -179,3 +167,11 @@ async function deletePost(req, res) {
     messages.messageWithError(res, 'Contact a Administrator', 500, err);
   }
 }
+
+module.exports = {
+  getPosts,
+  getPost,
+  createPost,
+  deletePost,
+  editPost,
+};
