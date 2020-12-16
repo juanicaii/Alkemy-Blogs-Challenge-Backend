@@ -2,7 +2,7 @@ const functions = require('../utils/functions');
 const messages = require('../utils/message');
 const db = require('../db');
 const { validationResult } = require('express-validator');
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 
 async function getPosts(req, res) {
   try {
@@ -30,16 +30,15 @@ async function getPost(req, res) {
   try {
     // OBTENGO EL ID DE LOS PARAMS
     const { id } = req.params;
-    const errors = validationResult(req).array();
 
-    if (errors.length > 0) {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
       // SI HAY ERRORES MUESTRO EL ERROR
-      const error = [];
-      errors.map((err) => {
-        error.push(err.msg);
-      });
+      const error = Boom.badRequest();
+      Object.assign(error.output.payload, { details: errors.array() });
 
-      throw Boom.badData(error);
+      throw error;
     }
     // OPCIONES DE LA QUERY
     const options = {
@@ -63,7 +62,7 @@ async function getPost(req, res) {
       res,
       err.output.payload.message,
       err.output.statusCode,
-      err.output.payload.error
+      err.output.payload.details
     );
   }
 }
@@ -72,17 +71,15 @@ async function createPost(req, res, next) {
   try {
     // OBTENDO EL POST DEL BODY
     const { title, content, image, category } = req.body;
-    const errors = validationResult(req).array();
+    const errors = validationResult(req);
 
     // VERIFICO QUE NO HAYA ERRORES
-    if (errors.length > 0) {
+    if (!errors.isEmpty()) {
       // SI HAY ERRORES MUESTRO EL ERROR
-      const error = [];
-      errors.map((err) => {
-        error.push(err.msg);
-      });
+      const error = Boom.badRequest();
+      Object.assign(error.output.payload, { details: errors.array() });
 
-      throw Boom.badData(error);
+      throw error;
     }
 
     // CREO EL POST
@@ -116,7 +113,7 @@ async function createPost(req, res, next) {
       res,
       err.output.payload.message,
       err.output.statusCode,
-      err.output.payload.error
+      err.output.payload.details
     );
   }
 }
@@ -180,16 +177,14 @@ async function deletePost(req, res) {
   try {
     // OBTENGO ID DEL PARAMS
     const { id } = req.params;
-    const errors = validationResult(req).array();
+    const errors = validationResult(req);
 
-    if (errors.length > 0) {
+    if (!errors.isEmpty()) {
       // SI HAY ERRORES MUESTRO EL ERROR
-      const error = [];
-      errors.map((err) => {
-        error.push(err.msg);
-      });
+      const error = Boom.badRequest();
+      Object.assign(error.output.payload, { details: errors.array() });
 
-      throw Boom.badData(error);
+      throw error;
     }
     // OPCIONES DE LA QUERY
     const options = {
@@ -209,7 +204,12 @@ async function deletePost(req, res) {
       messages.messageWithoutError(res, 'Post doesnt exist', { deleted: false }, 404);
     }
   } catch (err) {
-    messages.messageWithError(res, 'Contact a Administrator', 500, err.output.payload);
+    messages.messageWithError(
+      res,
+      err.output.payload.message,
+      err.output.statusCode,
+      err.output.payload.details
+    );
   }
 }
 

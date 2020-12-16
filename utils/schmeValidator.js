@@ -1,7 +1,7 @@
 const imageTypeDic = require('../utils/imageType');
 const db = require('../db');
 const functions = require('../utils/functions');
-const Boom = require('boom');
+const boom = require('@hapi/boom');
 
 const schemeValidationPost = {
   title: {
