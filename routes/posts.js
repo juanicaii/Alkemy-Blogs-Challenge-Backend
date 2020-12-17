@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const postsController = require('../controllers/postsController');
 const validation = require('../utils/schmeValidator');
-const asyncMiddleware = require('../utils/boomError');
+const asyncMiddleware = require('../utils/asyncMiddleware');
 const { checkSchema } = require('express-validator');
 
 router.get('/posts', asyncMiddleware(postsController.getPosts));

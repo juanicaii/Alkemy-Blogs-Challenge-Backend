@@ -1,6 +1,6 @@
 const imageTypeDic = require('../utils/imageType');
 const db = require('../db');
-const functions = require('../utils/functions');
+const postManager = require('../utils/postManager');
 const boom = require('@hapi/boom');
 
 const schemeValidationPost = {
@@ -21,6 +21,7 @@ const schemeValidationPost = {
   },
   image: {
     in: ['body'],
+
     exists: {
       errorMessage: 'The image cant be empty',
     },
@@ -38,6 +39,7 @@ const schemeValidationPost = {
       },
     },
   },
+
   category: {
     in: ['body'],
     errorMessage: 'The category is wrong',
@@ -46,17 +48,14 @@ const schemeValidationPost = {
     },
     isString: true,
     customSanitizer: {
-      options: (value) => {
+      options: async (value) => {
         if (value) {
-          return new Promise(async function (resolve, reject) {
-            const categoryExist = await functions.createIfNoExist(
-              db.category,
-              { name: value },
-              { name: value }
-            );
-
-            resolve(categoryExist.data.id);
-          });
+          const categoryExist = await postManager.createIfNoExist(
+            db.category,
+            { name: value },
+            { name: value }
+          );
+          return categoryExist.data.id;
         }
       },
     },
