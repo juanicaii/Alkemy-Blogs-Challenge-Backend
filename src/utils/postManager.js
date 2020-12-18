@@ -52,10 +52,10 @@ async function getOneData(model, options) {
 
 async function deleteData(model, options) {
   const deletedItem = await model.destroy(options);
-  return deletedItem !== actions.false;
+  return editedItem[0] !== actions.false;
 }
 
 async function editData(model, data, options) {
   const editedItem = await model.update(data, options);
-  return editedItem !== actions.false;
+  return editedItem[0] !== actions.false;
 }

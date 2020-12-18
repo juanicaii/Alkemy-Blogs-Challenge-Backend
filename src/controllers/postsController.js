@@ -66,19 +66,10 @@ async function createPost(req, res, next) {
 
   const postCreated = await postManager.createItem(db.posts, post, 201);
 
-  if (postCreated) {
-    withoutError(res, 'Post created succesfuly', {
-      created: true,
-      data: postCreated,
-    });
-  } else {
-    withoutError(
-      res,
-      'The post couldnt be created, Contact a Administrator',
-      { created: false, data: null },
-      200
-    );
-  }
+  withoutError(res, 'Post created succesfuly', {
+    created: true,
+    data: postCreated,
+  });
 }
 
 async function editPost(req, res) {
@@ -113,11 +104,11 @@ async function editPost(req, res) {
   const options = { where: { id } };
 
   const editedItem = await postManager.editData(db.posts, post, options);
-
+  console.log(editedItem);
   if (editedItem) {
     withoutError(res, 'Post edited succesfuly', { edited: true });
   } else {
-    withoutError(res, 'Post doesnt exist', { edited: false }, 404);
+    throw Boom.notFound('Post not exist');
   }
 }
 
@@ -143,8 +134,7 @@ async function deletePost(req, res) {
   if (deletedItem) {
     withoutError(res, 'Post deleted succesfuly', { deleted: true });
   } else {
-    // DEVUELVO QUE NO EXISTE EL POST
-    withoutError(res, 'Post doesnt exist', { deleted: false }, 404);
+    throw Boom.notFound('Post not exist');
   }
 }
 
