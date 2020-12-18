@@ -2,14 +2,14 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const logError = require('./middlewares/logError');
-const errorHanlder = require('./middlewares/errorHandler');
+const logError = require('./src/middlewares/logError');
+const errorHanlder = require('./src//middlewares/errorHandler');
 
 require('dotenv').config();
 
-const postsRouter = require('./routes/posts');
+const postsRouter = require('./src/routes/posts');
 
-const db = require('./db');
+const db = require('./src/db');
 
 const app = express();
 
