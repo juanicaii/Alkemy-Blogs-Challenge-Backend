@@ -104,7 +104,7 @@ async function editPost(req, res) {
   const options = { where: { id } };
 
   const editedItem = await postManager.editData(db.posts, post, options);
-  console.log(editedItem);
+
   if (editedItem) {
     withoutError(res, 'Post edited succesfuly', { edited: true });
   } else {
