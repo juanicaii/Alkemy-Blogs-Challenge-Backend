@@ -1,29 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const postsController = require('../controllers/postsController');
-const validation = require('../utils/schmeValidator');
-const asyncMiddleware = require('../utils/asyncMiddleware');
+const schemeValidationId = require('../validators/schemeValidationId');
+const schemeValidationPost = require('../validators/schemeValdiationPost');
+const asyncMiddleware = require('../middlewares/asyncMiddleware');
 const { checkSchema } = require('express-validator');
 
 router.get('/posts', asyncMiddleware(postsController.getPosts));
-router.get(
-  '/posts/:id',
-  checkSchema(validation.schemeValidationId),
-  asyncMiddleware(postsController.getPost)
-);
+router.get('/posts/:id', checkSchema(schemeValidationId), asyncMiddleware(postsController.getPost));
 router.post(
   '/posts',
-  checkSchema(validation.schemeValidationPost),
+  checkSchema(schemeValidationPost),
   asyncMiddleware(postsController.createPost)
 );
 router.patch(
   '/posts/:id',
-  checkSchema({ ...validation.schemeValidationPost, ...validation.schemeValidationId }),
+  checkSchema({ ...schemeValidationPost, ...schemeValidationId }),
   asyncMiddleware(postsController.editPost)
 );
 router.delete(
   '/posts/:id',
-  checkSchema(validation.schemeValidationId),
+  checkSchema(schemeValidationId),
   asyncMiddleware(postsController.deletePost)
 );
 

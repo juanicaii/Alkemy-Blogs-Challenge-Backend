@@ -2,15 +2,15 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const logError = require('./middlewares/logError');
+const errorHanlder = require('./middlewares/errorHandler');
 
-// VARIABLES DE ENTORNO
 require('dotenv').config();
-// IMPORT RUTAS
+
 const postsRouter = require('./routes/posts');
 
-// DATABASE
 const db = require('./db');
-// APP
+
 const app = express();
 
 app.use(logger('dev'));
@@ -18,7 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// RUTAS
 app.use('/api', postsRouter);
+app.use(logError);
+app.use(errorHanlder);
 
 module.exports = app;

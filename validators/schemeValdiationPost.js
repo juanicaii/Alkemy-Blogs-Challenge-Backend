@@ -1,7 +1,6 @@
 const imageTypeDic = require('../utils/imageType');
 const db = require('../db');
 const postManager = require('../utils/postManager');
-const boom = require('@hapi/boom');
 
 const schemeValidationPost = {
   title: {
@@ -62,16 +61,4 @@ const schemeValidationPost = {
   },
 };
 
-const schemeValidationId = {
-  id: {
-    in: ['params'],
-    isInt: {
-      errorMessage: 'The id must be numeric',
-    },
-  },
-};
-
-module.exports = {
-  schemeValidationId,
-  schemeValidationPost,
-};
+module.exports = schemeValidationPost;

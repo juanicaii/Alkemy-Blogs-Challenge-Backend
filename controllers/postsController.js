@@ -1,197 +1,150 @@
 const postManager = require('../utils/postManager');
-const messages = require('../utils/message');
+const withoutError = require('../utils/withoutError');
 const db = require('../db');
 const { validationResult } = require('express-validator');
 const Boom = require('@hapi/boom');
 
 async function getPosts(req, res) {
-  try {
-    // OBTENGO LOS DATOS DE LOS POTS
-    const options = {
-      include: [
-        {
-          model: db.category,
-          as: 'category',
-        },
-      ],
-    };
-    const posts = await postManager.getAllData(db.posts, options);
+  const options = {
+    include: [
+      {
+        model: db.category,
+        as: 'category',
+      },
+    ],
+  };
+  const posts = await postManager.getAllData(db.posts, options);
 
-    //  SI EXISTE ALGUN POSTS
-    if (posts) {
-      // DEVUELVO LOS POSTS
-      messages.messageWithoutError(res, 'All posts', posts);
-    }
-  } catch (err) {
-    console.log(err);
-    messages.messageWithError(res, 'Contact a Administrador', 500, err);
+  if (posts) {
+    withoutError(res, 'All posts', posts);
   }
 }
 
 async function getPost(req, res) {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const errors = validationResult(req);
+  const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const error = Boom.badRequest();
-      error.output.payload.details = errors.array();
+  if (!errors.isEmpty()) {
+    const error = Boom.badRequest();
+    error.output.payload.details = errors.array();
 
-      throw error;
-    }
-
-    const options = {
-      where: { id },
-      include: [
-        {
-          model: db.category,
-          as: 'category',
-        },
-      ],
-    };
-
-    const post = await postManager.getOneData(db.posts, options);
-
-    if (post) {
-      messages.messageWithoutError(res, `Post ID: ${id}`, post);
-    }
-  } catch (err) {
-    messages.messageWithError(
-      res,
-      err.output.payload.message,
-      err.output.statusCode,
-      err.output.payload.details
-    );
+    throw error;
   }
+
+  const options = {
+    where: { id },
+    include: [
+      {
+        model: db.category,
+        as: 'category',
+      },
+    ],
+  };
+
+  const post = await postManager.getOneData(db.posts, options);
+
+  withoutError(res, `Post ID: ${id}`, post);
 }
 
 async function createPost(req, res, next) {
-  try {
-    const { title, content, image, category } = req.body;
-    const errors = validationResult(req);
+  const { title, content, image, category } = req.body;
+  const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const error = Boom.badRequest();
-      error.output.payload.details = errors.array();
-      throw error;
-    }
+  if (!errors.isEmpty()) {
+    const error = Boom.badRequest();
+    error.output.payload.details = errors.array();
+    throw error;
+  }
 
-    // CREO EL POST
-    const post = {
-      title,
-      content,
-      image,
-      categoryID: category,
-    };
+  const post = {
+    title,
+    content,
+    image,
+    categoryID: category,
+  };
 
-    const postCreated = await postManager.createItem(db.posts, post, 201);
+  const postCreated = await postManager.createItem(db.posts, post, 201);
 
-    if (postCreated) {
-      messages.messageWithoutError(res, 'Post created succesfuly', {
-        created: true,
-        data: postCreated,
-      });
-    } else {
-      messages.messageWithoutError(
-        res,
-        'The post couldnt be created, Contact a Administrator',
-        { created: false, data: null },
-        200
-      );
-    }
-  } catch (err) {
-    messages.messageWithError(
+  if (postCreated) {
+    withoutError(res, 'Post created succesfuly', {
+      created: true,
+      data: postCreated,
+    });
+  } else {
+    withoutError(
       res,
-      err.output.payload.message,
-      err.output.statusCode,
-      err.output.payload.details
+      'The post couldnt be created, Contact a Administrator',
+      { created: false, data: null },
+      200
     );
   }
 }
 
 async function editPost(req, res) {
-  try {
-    const { id } = req.params;
-    const { title, content, image, category } = req.body;
+  const { id } = req.params;
+  const { title, content, image, category } = req.body;
 
-    const errors = validationResult(req).array();
+  const errors = validationResult(req).array();
 
-    if (errors.length > 0) {
-      const error = [];
-      const errorId = [];
-      errors.map((err) => {
-        error.push(err.msg);
-      });
+  if (errors.length > 0) {
+    const error = [];
+    const errorId = [];
+    errors.map((err) => {
+      error.push(err.msg);
+    });
 
-      throw Boom.badData(error);
-    }
+    throw Boom.badData(error);
+  }
 
-    const categoryExist = await postManager.createIfNoExist(
-      db.category,
-      { name: category },
-      { name: category }
-    );
+  const categoryExist = await postManager.createIfNoExist(
+    db.category,
+    { name: category },
+    { name: category }
+  );
 
-    const post = {
-      title,
-      content,
-      image,
-      categoryID: categoryExist.data.id,
-    };
+  const post = {
+    title,
+    content,
+    image,
+    categoryID: categoryExist.data.id,
+  };
 
-    const options = { where: { id } };
+  const options = { where: { id } };
 
-    const editedItem = await postManager.editData(db.posts, post, options);
+  const editedItem = await postManager.editData(db.posts, post, options);
 
-    if (editedItem) {
-      messages.messageWithoutError(res, 'Post edited succesfuly', { edited: true });
-    } else {
-      messages.messageWithoutError(res, 'Post doesnt exist', { edited: false }, 404);
-    }
-  } catch (err) {
-    messages.messageWithError(
-      res,
-      err.output.payload.message,
-      err.output.statusCode,
-      err.output.payload.error
-    );
+  if (editedItem) {
+    withoutError(res, 'Post edited succesfuly', { edited: true });
+  } else {
+    withoutError(res, 'Post doesnt exist', { edited: false }, 404);
   }
 }
 
 async function deletePost(req, res) {
-  try {
-    const { id } = req.params;
-    const errors = validationResult(req);
+  const { id } = req.params;
+  const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const error = Boom.badRequest();
-      error.output.payload.details = errors.array();
+  if (!errors.isEmpty()) {
+    const error = Boom.badRequest();
+    error.output.payload.details = errors.array();
 
-      throw error;
-    }
+    throw error;
+  }
 
-    const options = {
-      where: {
-        id,
-      },
-    };
+  const options = {
+    where: {
+      id,
+    },
+  };
 
-    const deletedItem = await postManager.deleteData(db.posts, options);
+  const deletedItem = await postManager.deleteData(db.posts, options);
 
-    if (deletedItem) {
-      messages.messageWithoutError(res, 'Post deleted succesfuly', { deleted: true });
-    } else {
-      // DEVUELVO QUE NO EXISTE EL POST
-      messages.messageWithoutError(res, 'Post doesnt exist', { deleted: false }, 404);
-    }
-  } catch (err) {
-    messages.messageWithError(
-      res,
-      err.output.payload.message,
-      err.output.statusCode,
-      err.output.payload.details
-    );
+  if (deletedItem) {
+    withoutError(res, 'Post deleted succesfuly', { deleted: true });
+  } else {
+    // DEVUELVO QUE NO EXISTE EL POST
+    withoutError(res, 'Post doesnt exist', { deleted: false }, 404);
   }
 }
 
