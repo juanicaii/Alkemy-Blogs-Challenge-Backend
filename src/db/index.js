@@ -34,6 +34,6 @@ async function createDatabase() {
     as: 'category',
   });
 
-  await sequelize.sync();
+  await sequelize.sync({ alter: true });
   console.log('Connection established');
 }

@@ -48,7 +48,7 @@ async function getPost(req, res) {
 }
 
 async function createPost(req, res, next) {
-  const { title, content, image, category } = req.body;
+  const { title, body, image, category } = req.body;
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -59,7 +59,7 @@ async function createPost(req, res, next) {
 
   const post = {
     title,
-    content,
+    body,
     image,
     categoryID: category,
   };
@@ -74,13 +74,13 @@ async function createPost(req, res, next) {
 
 async function editPost(req, res) {
   const { id } = req.params;
-  const { title, content, image, category } = req.body;
+  const { title, body, image, category } = req.body;
 
   const errors = validationResult(req).array();
 
   if (errors.length > 0) {
     const error = [];
-    const errorId = [];
+
     errors.map((err) => {
       error.push(err.msg);
     });
@@ -96,7 +96,7 @@ async function editPost(req, res) {
 
   const post = {
     title,
-    content,
+    body,
     image,
     categoryID: categoryExist.data.id,
   };

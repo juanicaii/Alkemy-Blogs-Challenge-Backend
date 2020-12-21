@@ -11,7 +11,7 @@ const schemeValidationPost = {
       errorMessage: 'The title cant be empty',
     },
   },
-  content: {
+  body: {
     in: ['body'],
     exists: {
       errorMessage: 'The content cant be empty',

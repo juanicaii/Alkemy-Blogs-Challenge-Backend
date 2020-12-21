@@ -13,7 +13,7 @@ function model(sequelize) {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    content: {
+    body: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
