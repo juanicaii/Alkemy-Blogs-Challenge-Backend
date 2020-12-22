@@ -2,6 +2,9 @@
   "name": "backend",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": "15.x"
+  },
   "scripts": {
     "dev": "nodemon -L ./bin/dev.js",
     "start": "node ./bin/www"
