@@ -16,7 +16,7 @@ async function getPosts(req, res) {
   const posts = await postManager.getAllData(db.posts, options);
 
   if (posts) {
-    withoutError(res, 'All posts', posts);
+    withoutError(res, posts, 200);
   }
 }
 
@@ -44,7 +44,11 @@ async function getPost(req, res) {
 
   const post = await postManager.getOneData(db.posts, options);
 
-  withoutError(res, `Post ID: ${id}`, post);
+  if (post) {
+    withoutError(res, post, 200);
+  } else {
+    throw Boom.notFound('Post not exist');
+  }
 }
 
 async function createPost(req, res, next) {
@@ -66,7 +70,7 @@ async function createPost(req, res, next) {
 
   const postCreated = await postManager.createItem(db.posts, post, 201);
 
-  withoutError(res, 'Post created succesfuly', {
+  withoutError(res, {
     created: true,
     data: postCreated,
   });
@@ -106,7 +110,7 @@ async function editPost(req, res) {
   const editedItem = await postManager.editData(db.posts, post, options);
 
   if (editedItem) {
-    withoutError(res, 'Post edited succesfuly', { edited: true });
+    withoutError(res, { edited: true }, 201);
   } else {
     throw Boom.notFound('Post not exist');
   }
@@ -132,7 +136,7 @@ async function deletePost(req, res) {
   const deletedItem = await postManager.deleteData(db.posts, options);
 
   if (deletedItem) {
-    withoutError(res, 'Post deleted succesfuly', { deleted: true });
+    withoutError(res, { deleted: true }, 200);
   } else {
     throw Boom.notFound('Post not exist');
   }
