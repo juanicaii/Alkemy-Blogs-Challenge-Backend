@@ -32,7 +32,7 @@ $ npm run start
 
 _Then open: http://localhost:8080
 
-## Build whit 🛠️
+## Build with 🛠️
 
 - [Node](https://nodejs.org/es/docs/)
 - [Express](https://expressjs.com/en/guide/routing.html)
